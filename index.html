@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Pokemon</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+</head>
+<body>
+
+<div class="max-w-2xl m-auto">
+    <h1 class="text-3xl font-bold my-6 text-teal-800">
+        Pokemon app
+    </h1>
+    <div id="pokemonList" class="my-10 -mx-4 flex flex-wrap"></div>
+</div>
+
+<script>
+  const pokemonList = document.getElementById('pokemonList');
+  const endpoint = 'https://pokeapi.co/api/v2/pokemon';
+  const limit = 20; // quanti ne vediamo per pagina
+  let offset = 0; // dal numero da cui deve partire
+
+  async function getPokemon(url) {
+    const response = await fetch(url);
+    return await response.json();
+  }
+
+  async function getItems(actualOffset = 0) {
+
+    await getPokemon(`${endpoint}?limit=${limit}&offset=${actualOffset}`).then(data => {
+      data.results.forEach(pokemon => {
+
+        const arrClean = pokemon.url.split('/').filter(item => item !== '');
+        const id = arrClean[arrClean.length - 1]
+        const imgSrc = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+
+        pokemonList.innerHTML += `
+        <div class="w-1/4 p-2 ">
+            <div class="border border-slate-200 rounded shadow">
+
+                <img class="w-100" src="${imgSrc}" alt="${pokemon.name}">
+                <div class="p-3">
+                 ${pokemon.name}
+                </div>
+            </div>
+        </div>
+        `;
+      });
+    });
+  }
+
+  getItems().then(() => {
+    // console.log('ok');
+  })
+
+  window.onscroll = function () {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+      console.log("Sei a 100px dal fondo!");
+      offset += limit;
+      getItems(offset);
+    }
+  };
+
+
+</script>
+
+</body>
+</html>

@@ -4,66 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Pokemon</title>
+    <title>Pokemon app</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
 </head>
-<body>
 
-<div class="max-w-2xl m-auto">
-    <h1 class="text-3xl font-bold my-6 text-teal-800">
-        Pokemon app
-    </h1>
-    <div id="pokemonList" class="my-10 -mx-4 flex flex-wrap"></div>
+<body class="bg-zinc-50 outline-none antialiased font-[Inter]">
+
+<div class="px-4">
+    <header class="max-w-7xl mx-auto mt-16 mb-10">
+        <h1 class="text-3xl xl:text-4xl font-bold mb-3 text-zinc-800">Pokemon app</h1>
+        <p class="text-zinc-500">Ketch 'Em All, Anytime, Anywhere!</p>
+    </header>
+    <main class="max-w-7xl mx-auto my-10">
+        <div id="pokemonList" class="-mx-2 flex flex-wrap"></div>
+    </main>
 </div>
 
 <script>
-  const pokemonList = document.getElementById('pokemonList');
-  const endpoint = 'https://pokeapi.co/api/v2/pokemon';
-  const limit = 20; // quanti ne vediamo per pagina
-  let offset = 0; // dal numero da cui deve partire
+  const pokemonList = document.getElementById("pokemonList");
+  const endpoint = "https://pokeapi.co/api/v2/pokemon";
+  const limit = 20;
+  let offset = 0;
+  let isLoading = false; // Previene chiamate multiple
 
   async function getPokemon(url) {
     const response = await fetch(url);
-    return await response.json();
+    return response.json();
   }
 
   async function getItems(actualOffset = 0) {
+    if (isLoading) return;
+    isLoading = true;
 
-    await getPokemon(`${endpoint}?limit=${limit}&offset=${actualOffset}`).then(data => {
-      data.results.forEach(pokemon => {
+    try {
+      const url = `${endpoint}?limit=${limit}&offset=${actualOffset}`;
+      const data = await getPokemon(url);
 
-        const arrClean = pokemon.url.split('/').filter(item => item !== '');
-        const id = arrClean[arrClean.length - 1]
+      data.results.forEach((pokemon) => {
+        const id = pokemon.url.split("/").filter(Boolean).pop();
         const imgSrc = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 
-        pokemonList.innerHTML += `
-        <div class="w-1/4 p-2 ">
-            <div class="border border-slate-200 rounded shadow">
+        const card = document.createElement("div");
+        card.className = "w-1/2 sm:w-1/4 lg:w-1/6 p-2";
 
-                <img class="w-100" src="${imgSrc}" alt="${pokemon.name}">
-                <div class="p-3">
-                 ${pokemon.name}
-                </div>
+        card.innerHTML = `
+          <a class="block bg-white rounded-lg shadow-sm">
+            <img class="w-100 h-auto" src="${imgSrc}" alt="${pokemon.name}" width="193px" height="193px" loading="lazy">
+            <div class="p-3">
+              <h2 class="text-md font-bold text-zinc-800 capitalize">
+                ${pokemon.name}
+              </h2>
             </div>
-        </div>
+          </a>
         `;
+
+        pokemonList.appendChild(card);
       });
-    });
+    } catch (error) {
+      console.error("Errore nel caricamento dei Pokémon:", error);
+    } finally {
+      isLoading = false;
+    }
   }
 
-  getItems().then(() => {
-    // console.log('ok');
-  })
-
-  window.onscroll = function () {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
-      console.log("Sei a 100px dal fondo!");
+  function checkScroll() {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300 && !isLoading) {
       offset += limit;
       getItems(offset);
     }
-  };
+  }
 
+  // Carica i primi Pokémon all'avvio
+  getItems();
 
+  // Aggiunge lo scroll event listener
+  window.addEventListener("scroll", checkScroll);
 </script>
 
 </body>

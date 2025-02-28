@@ -16,7 +16,7 @@
 
 <div class="px-4">
     <header class="max-w-7xl mx-auto mt-12 mb-10">
-        <h1 class="text-3xl xl:text-4xl font-bold mb-3 text-zinc-800">Pokemon Memory</h1>
+        <h1 class="text-3xl xl:text-4xl font-bold mb-3 text-zinc-800">Pokémon Memory</h1>
         <p class="text-zinc-500">Ketch 'Em All, Anytime, Anywhere!</p>
     </header>
     <main class="max-w-7xl mx-auto my-10">
@@ -29,7 +29,6 @@
   const endpoint = "https://pokeapi.co/api/v2/pokemon"
   const limit = 10000
   const totalPairs = 12
-  let offset = 0
   let isLoading = false
   let flippedCards = []
   let lockBoard = false
@@ -58,13 +57,13 @@
         const card = document.createElement("div")
         card.className = `pokemon_${id} w-1/2 sm:w-1/4 lg:w-1/8 p-2`
         card.innerHTML = `
-          <div data-id="${id}" class="flip-card w-full aspect-[9/12]">
+          <div data-id="${id}" class="flip-card w-full aspect-[24/30]">
             <div class="flip-card-inner transition-transform duration-500 transform-style-3d">
               <div class="flip-card-front absolute inset-0 flex items-center justify-center bg-zinc-200 rounded-lg shadow-sm cursor-pointer">
-                <img class="w-[60px]" src="pokeapi.png" alt="PokeApi"/>
+                <img class="w-[50px]" src="pokeapi.png" alt="PokeApi"/>
               </div>
               <div class="flip-card-back absolute inset-0 bg-white rounded-lg shadow-sm cursor-pointer">
-                  <img class="w-100 h-auto pt-2" src="${imgSrc}" alt="${pokemon.name}" width="193px" height="193px" loading="lazy">
+                  <img class="w-100 h-auto px-2 pt-2" src="${imgSrc}" alt="${pokemon.name}" width="193px" height="193px" loading="lazy">
                   <div class="p-3">
                     <h2 class="text-sm font-bold text-zinc-800 capitalize truncate">
                       ${pokemon.name}

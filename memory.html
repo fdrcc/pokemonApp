@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Pokemon app</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body class="bg-zinc-50 outline-none antialiased font-[Inter]">
+
+<div class="px-4">
+    <header class="max-w-7xl mx-auto mt-12 mb-10">
+        <h1 class="text-3xl xl:text-4xl font-bold mb-3 text-zinc-800">Pokemon Memory</h1>
+        <p class="text-zinc-500">Ketch 'Em All, Anytime, Anywhere!</p>
+    </header>
+    <main class="max-w-7xl mx-auto my-10">
+        <div id="pokemonList" class="-mx-2 flex flex-wrap"></div>
+    </main>
+</div>
+
+<script>
+  const pokemonList = document.getElementById("pokemonList")
+  const endpoint = "https://pokeapi.co/api/v2/pokemon"
+  const limit = 10000
+  const totalPairs = 12
+  let offset = 0
+  let isLoading = false
+  let flippedCards = []
+  let lockBoard = false
+  let matchedPairs = 0
+
+  async function getPokemon(url) {
+    const response = await fetch(url)
+    return response.json()
+  }
+
+  async function getItems(actualOffset = 0) {
+    if (isLoading) return
+    isLoading = true
+
+    try {
+      const url = `${endpoint}?limit=${limit}&offset=${actualOffset}`
+      const data = await getPokemon(url)
+
+      const shuffledArray = data.results.sort(() => Math.random() - 0.5).slice(0, 12)
+      const duplicatedArray = [...shuffledArray, ...shuffledArray.map(obj => ({...obj}))]
+      const gameArray = duplicatedArray.sort(() => Math.random() - 0.5).slice(0, 24)
+
+      gameArray.forEach((pokemon) => {
+        const id = pokemon.url.split("/").filter(Boolean).pop()
+        const imgSrc = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
+        const card = document.createElement("div")
+        card.className = `pokemon_${id} w-1/2 sm:w-1/4 lg:w-1/8 p-2`
+        card.innerHTML = `
+          <div data-id="${id}" class="flip-card w-full aspect-[9/12]">
+            <div class="flip-card-inner transition-transform duration-500 transform-style-3d">
+              <div class="flip-card-front absolute inset-0 flex items-center justify-center bg-zinc-200 rounded-lg shadow-sm cursor-pointer">
+                <img class="w-[60px]" src="pokeapi.png" alt="PokeApi"/>
+              </div>
+              <div class="flip-card-back absolute inset-0 bg-white rounded-lg shadow-sm cursor-pointer">
+                  <img class="w-100 h-auto pt-2" src="${imgSrc}" alt="${pokemon.name}" width="193px" height="193px" loading="lazy">
+                  <div class="p-3">
+                    <h2 class="text-sm font-bold text-zinc-800 capitalize truncate">
+                      ${pokemon.name}
+                    </h2>
+                  </div>
+              </div>
+            </div>
+          </div>
+          `
+        const flipCard = card.querySelector(".flip-card")
+        flipCard.addEventListener("click", handleFlip)
+        pokemonList.appendChild(card)
+      })
+
+    } catch (error) {
+      console.error(error)
+
+    } finally {
+      isLoading = false
+    }
+  }
+
+  function handleFlip(e) {
+    if (lockBoard) return
+
+    const flipCard = e.currentTarget
+    if (flipCard.classList.contains("flipped")) return
+
+    flipCard.classList.add("flipped")
+    flippedCards.push(flipCard)
+
+    if (flippedCards.length === 2) {
+      lockBoard = true
+      checkForMatch()
+    }
+  }
+
+  function checkForMatch() {
+    const [card1, card2] = flippedCards
+    const isMatch = card1.dataset.id === card2.dataset.id
+
+    if (isMatch) {
+      card1.removeEventListener("click", handleFlip)
+      card2.removeEventListener("click", handleFlip)
+      matchedPairs++
+      if (matchedPairs === totalPairs) {
+        setTimeout(() => {
+          alert("Complimenti! Hai trovato tutte le coppie!")
+        }, 300)
+      }
+      resetBoard()
+
+    } else {
+      setTimeout(() => {
+        card1.classList.remove("flipped")
+        card2.classList.remove("flipped")
+        resetBoard()
+      }, 800)
+    }
+  }
+
+  function resetBoard() {
+    flippedCards = []
+    lockBoard = false
+  }
+
+  getItems()
+
+</script>
+
+</body>
+</html>

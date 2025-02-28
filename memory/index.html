@@ -22,6 +22,16 @@
     <main class="max-w-7xl mx-auto my-10">
         <div id="pokemonList" class="-mx-2 flex flex-wrap"></div>
     </main>
+
+    <dialog id="winDialog" class="fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg rounded-lg shadow-lg bg-white">
+        <img src="https://media.giphy.com/media/Rz7prL2OpPqAE/giphy.gif?cid=ecf05e471lw2g5o66wz4wono81315ttc3chq4axdo3e70ftx&ep=v1_gifs_search&rid=giphy.gif&ct=g"
+             alt="winner"/>
+        <div class="p-4 text-center">
+            <h2 class="text-xl font-bold text-zinc-800">Complimenti! Hai trovato tutte le coppie!</h2>
+            <button id="refreshBtn" class="px-6 py-2 my-4 bg-blue-500 hover:bg-blue-600 text-white rounded cursor-pointer font-bold">Rigioca</button>
+        </div>
+    </dialog>
+
 </div>
 
 <script>
@@ -47,9 +57,9 @@
       const url = `${endpoint}?limit=${limit}&offset=${actualOffset}`
       const data = await getPokemon(url)
 
-      const shuffledArray = data.results.sort(() => Math.random() - 0.5).slice(0, 12)
+      const shuffledArray = data.results.sort(() => Math.random() - 0.5).slice(0, totalPairs)
       const duplicatedArray = [...shuffledArray, ...shuffledArray.map(obj => ({...obj}))]
-      const gameArray = duplicatedArray.sort(() => Math.random() - 0.5).slice(0, 24)
+      const gameArray = duplicatedArray.sort(() => Math.random() - 0.5).slice(0, totalPairs * 2)
 
       gameArray.forEach((pokemon) => {
         const id = pokemon.url.split("/").filter(Boolean).pop()
@@ -111,7 +121,7 @@
       matchedPairs++
       if (matchedPairs === totalPairs) {
         setTimeout(() => {
-          alert("Complimenti! Hai trovato tutte le coppie!")
+          document.getElementById("winDialog").showModal()
         }, 300)
       }
       resetBoard()
@@ -131,6 +141,10 @@
   }
 
   getItems()
+
+  document.getElementById("refreshBtn").addEventListener("click", () => {
+    window.location.reload()
+  })
 
 </script>
 
